@@ -105,3 +105,70 @@ The basic structure of the config.json file is as follows:
 ## Deployment
 
 The `deploy.yml` file is correctly configured to upload artifacts without errors. The `path` specified in the `actions/upload-pages-artifact@v3` step is `./dist`, matching the actual build output directory. The `Build` step in `deploy.yml` runs `npm run build`, and the build output is correctly placed in the `./dist` directory. The `.github/workflows/deploy-preview.yml` file uses `./dist/` as the `source-dir`, consistent with `deploy.yml`.
+
+### Deployment Process
+
+The deployment process for QRScout involves the following steps:
+
+1. **Checkout the repository**: The workflow checks out the repository to the runner using the `actions/checkout@v4` action.
+2. **Set up Node.js**: The workflow sets up Node.js using the `actions/setup-node@v3` action, specifying the Node.js version and caching strategy.
+3. **Install dependencies**: The workflow installs the project dependencies using `npm install`.
+4. **Build the project**: The workflow runs the build script (`npm run build`) to generate the production-ready files in the `./dist` directory.
+5. **Set up GitHub Pages**: The workflow sets up GitHub Pages using the `actions/configure-pages@v3` action.
+6. **Upload artifact**: The workflow uploads the build output (`./dist` directory) as an artifact using the `actions/upload-pages-artifact@v3` action.
+7. **Deploy to GitHub Pages**: The workflow deploys the uploaded artifact to GitHub Pages using the `actions/deploy-pages@v2` action.
+
+### Configuration for `deploy.yml`
+
+The `deploy.yml` file should be configured as follows:
+
+```yaml
+name: Deploy static content to Pages
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+env:
+  VITE_STATSIG_CLIENT_KEY: client-FccOCTznRdYyGr7cx3vJoyoWyO1BTqBzv6S2g1lYPvB
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+```
+
+This configuration ensures that the deployment process runs smoothly and the artifacts are correctly uploaded and deployed to GitHub Pages.

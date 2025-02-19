@@ -1,4 +1,3 @@
-
 A QR Code-based scouting system for FRC
 
 ## Getting started
@@ -102,3 +101,7 @@ The basic structure of the config.json file is as follows:
 ```
 
 `defaultValue`: The default value of this field.
+
+## Deployment
+
+The `deploy.yml` file is correctly configured to upload artifacts without errors. The `path` specified in the `actions/upload-pages-artifact@v3` step is `./dist`, matching the actual build output directory. The `Build` step in `deploy.yml` runs `npm run build`, and the build output is correctly placed in the `./dist` directory. The `.github/workflows/deploy-preview.yml` file uses `./dist/` as the `source-dir`, consistent with `deploy.yml`.

@@ -172,3 +172,70 @@ jobs:
 ```
 
 This configuration ensures that the deployment process runs smoothly and the artifacts are correctly uploaded and deployed to GitHub Pages.
+
+## GitHub Workflow for Deployment to GitHub Pages
+
+To automate the deployment of this application to GitHub Pages, you can create a GitHub workflow file named `deploy.yml` in the `.github/workflows` directory. This workflow will handle the deployment process whenever changes are pushed to the `main` branch or triggered manually.
+
+### Sample `deploy.yml` Configuration
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
+```
+
+### Explanation of the Workflow
+
+1. **Triggering Events**: The workflow is triggered on pushes to the `main` branch and manual dispatch.
+2. **Permissions**: The workflow requires read access to contents, write access to pages, and write access to id-token.
+3. **Job Definition**: The `deploy` job runs on `ubuntu-latest`.
+4. **Steps**:
+   - **Checkout repository**: Checks out the repository using `actions/checkout@v4`.
+   - **Set up Node.js**: Sets up Node.js using `actions/setup-node@v3` with the specified version and caching strategy.
+   - **Install dependencies**: Installs project dependencies using `npm install`.
+   - **Build project**: Builds the project using `npm run build`.
+   - **Configure GitHub Pages**: Sets up GitHub Pages using `actions/configure-pages@v3`.
+   - **Upload artifact**: Uploads the build output (`./dist` directory) as an artifact using `actions/upload-pages-artifact@v3`.
+   - **Deploy to GitHub Pages**: Deploys the uploaded artifact to GitHub Pages using `actions/deploy-pages@v2`.
+
+This workflow ensures that the application is automatically deployed to GitHub Pages whenever changes are pushed to the `main` branch or triggered manually.
